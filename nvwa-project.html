@@ -246,6 +246,64 @@
             width: 100%;
         }
 
+        .nav-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .nav-logo {
+            width: auto;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-logo-container:hover .nav-logo {
+            transform: rotate(360deg);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-logo-tooltip {
+            position: absolute;
+            left: 100%;
+            margin-left: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: #00F2FF;
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .nav-logo-container:hover .nav-logo-tooltip {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .nav-logo-text {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+        }
+
+        @media (max-width: 767px) {
+            .nav-logo-text {
+                display: none;
+            }
+        }
+
         .testimonial-card {
             background: rgba(18, 18, 26, 0.6);
             backdrop-filter: blur(10px);
@@ -418,6 +476,28 @@
             display: flex;
             flex-direction: column;
             min-height: 340px;
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .milestone-bg-image {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.05;
+            mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        .milestone-card:hover .milestone-bg-image {
+            opacity: 0.15;
+            transform: scale(1.1);
         }
 
         .milestone-card::before {
@@ -430,6 +510,7 @@
             background: linear-gradient(135deg, rgba(0, 242, 255, 0.1) 0%, transparent 50%);
             opacity: 0;
             transition: opacity 0.5s ease;
+            z-index: 1;
         }
 
         .milestone-card.active {
@@ -503,6 +584,7 @@
             font-size: 0.95rem !important;
             margin-bottom: 1.5rem;
             flex: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .paper-badge {
@@ -572,10 +654,14 @@
     <nav class="fixed top-0 left-0 right-0 z-50 bg-space-black/90 backdrop-blur-xl border-b border-white/5">
         <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <a href="#" class="font-mono text-xl font-bold tracking-tight">
-                    <span class="text-electric-cyan">NVWA 女娲</span>
-                    <span class="text-white/60">_</span>
-                    <span class="text-white">PROJECT</span>
+                <a href="#" class="nav-logo-container">
+                    <img src="resources/project_icon.png" alt="NVWA Logo" class="nav-logo" onerror="this.style.display='none'">
+                    <span class="nav-logo-tooltip">System Core: Active</span>
+                    <span class="nav-logo-text font-mono text-xl font-bold tracking-tight">
+                        <span class="text-electric-cyan">NVWA 女娲</span>
+                        <span class="text-white/60">_</span>
+                        <span class="text-white">PROJECT</span>
+                    </span>
                 </a>
                 <div class="hidden md:flex items-center gap-8">
                     <a href="#home" class="nav-link text-sm font-mono text-white/60 hover:text-electric-cyan">HOME</a>
@@ -658,6 +744,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-electric-cyan/30" data milestone="1">
+                    <img src="resources/step_1.png" alt="Resource Acquisition" class="milestone-bg-image" onerror="this.style.display='none'">
                     <div class="milestone-number">01</div>
                     <div class="milestone-content">
                         <div class="milestone-header">
@@ -682,6 +769,7 @@
                 </div>
                 
                 <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-neon-purple/30" data milestone="2">
+                    <img src="resources/step_2.png" alt="Self-Replication" class="milestone-bg-image" onerror="this.style.display='none'">
                     <div class="milestone-number">02</div>
                     <div class="milestone-content">
                         <div class="milestone-header">
@@ -706,6 +794,7 @@
                 </div>
                 
                 <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-neon-green/30" data milestone="3">
+                    <img src="resources/step_3.png" alt="Self-Proliferation" class="milestone-bg-image" onerror="this.style.display='none'">
                     <div class="milestone-number">03</div>
                     <div class="milestone-content">
                         <div class="milestone-header">
@@ -730,6 +819,7 @@
                 </div>
                 
                 <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-red-500/30 hover:border-red-500/50" data milestone="4">
+                    <img src="resources/step_4.png" alt="Self-Evolution" class="milestone-bg-image" onerror="this.style.display='none'">
                     <div class="milestone-number" style="background: linear-gradient(135deg, #EF4444, #DC2626); -webkit-background-clip: text; background-clip: text;">04</div>
                     <div class="milestone-content">
                         <div class="milestone-header">
