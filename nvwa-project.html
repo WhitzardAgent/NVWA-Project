@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Project NVWA (女娲) — Silicon Life Research</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'space-black': '#050505',
+                        'space-dark': '#0A0A0F',
+                        'space-gray': '#12121A',
+                        'electric-cyan': '#00F2FF',
+                        'electric-cyan-dim': '#00C4CC',
+                        'slate-gray': '#6B7280',
+                        'slate-light': '#9CA3AF',
+                        'neon-purple': '#B000FF',
+                        'neon-green': '#00FF88',
+                    },
+                    fontFamily: {
+                        'mono': ['JetBrains Mono', 'monospace'],
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "linear-gradient(to right, rgba(0, 242, 255, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 242, 255, 0.03) 1px, transparent 1px)",
+                        'glow-radial': 'radial-gradient(circle at center, rgba(0, 242, 255, 0.15) 0%, transparent 70%)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'scan': 'scan 3s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(0, 242, 255, 0.3)' },
+                            '100%': { boxShadow: '0 0 40px rgba(0, 242, 255, 0.6)' },
+                        },
+                        scan: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' },
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #050505;
+            color: #E5E7EB;
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00F2FF, #00C4CC);
+            border-radius: 4px;
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(to right, rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glow-line {
+            position: relative;
+        }
+
+        .glow-line::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00F2FF, transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .milestone-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .milestone-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .milestone-card.active {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 242, 255, 0.2);
+        }
+
+        .milestone-card.active::before {
+            opacity: 1;
+        }
+
+        .milestone-number {
+            font-size: 6rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #00F2FF, #00C4CC);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0.1;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .milestone-card.active .milestone-number {
+            opacity: 0.3;
+        }
+
+        .team-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .team-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(135deg, #00F2FF, #B000FF);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .team-card:hover::after {
+            opacity: 1;
+        }
+
+        .team-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 5, 5, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .team-card:hover .team-overlay {
+            opacity: 1;
+        }
+
+        .cyber-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #00F2FF;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .testimonial-card {
+            background: rgba(18, 18, 26, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 242, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            border-color: rgba(0, 242, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .footer-link {
+            color: #9CA3AF;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: #00F2FF;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00F2FF, #B000FF);
+            z-index: 9999;
+            width: 0%;
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            border-right: 2px solid #00F2FF;
+            animation: blink 0.7s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        .data-stream {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent, #00F2FF, transparent);
+            animation: dataStream 2s linear infinite;
+        }
+
+        @keyframes dataStream {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(100%); opacity: 0; }
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .tech-item {
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid rgba(0, 242, 255, 0.1);
+            padding: 1rem;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #9CA3AF;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: rgba(0, 242, 255, 0.3);
+            color: #00F2FF;
+        }
+
+        .tech-item-active {
+            background: rgba(0, 242, 255, 0.1);
+            border: 2px solid rgba(0, 242, 255, 0.8);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), 0 0 40px rgba(0, 242, 255, 0.2);
+            animation: techGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes techGlow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), 0 0 40px rgba(0, 242, 255, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(0, 242, 255, 0.6), 0 0 60px rgba(0, 242, 255, 0.3);
+            }
+        }
+
+        .tech-item-inactive {
+            opacity: 0.4;
+            filter: grayscale(50%);
+        }
+
+        .tech-item-inactive:hover {
+            opacity: 0.6;
+            filter: grayscale(30%);
+        }
+
+        .current-focus-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #00F2FF;
+            color: #000000;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+        }
+
+        .current-focus-dot {
+            width: 6px;
+            height: 6px;
+            background: #000000;
+            border-radius: 50%;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .research-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: #00F2FF;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            border-radius: 0.5rem;
+        }
+
+        .research-status-bar {
+            width: 8px;
+            height: 8px;
+            background: #00F2FF;
+            border-radius: 50%;
+            animation: statusPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(0, 242, 255, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(0, 242, 255, 1);
+            }
+        }
+
+        .milestone-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            min-height: 340px;
+        }
+
+        .milestone-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .milestone-card.active {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 242, 255, 0.2);
+        }
+
+        .milestone-card.active::before {
+            opacity: 1;
+        }
+
+        .milestone-number {
+            font-size: 6rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #00F2FF, #00C4CC);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0.1;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            text-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+            transition: opacity 0.3s ease, text-shadow 0.3s ease;
+            pointer-events: none;
+        }
+
+        .milestone-card:hover .milestone-number {
+            opacity: 0.2;
+            text-shadow: 0 0 50px rgba(0, 242, 255, 0.5);
+        }
+
+        .milestone-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .milestone-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .milestone-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .milestone-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 0.75rem;
+        }
+
+        .milestone-description {
+            color: #F1F5F9 !important;
+            line-height: 1.6 !important;
+            font-size: 0.95rem !important;
+            margin-bottom: 1.5rem;
+            flex: 1;
+        }
+
+        .paper-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-top: auto;
+            width: fit-content;
+        }
+
+        .paper-badge-electric {
+            background: transparent;
+            border: 1px solid rgba(0, 242, 255, 0.5);
+            color: #00F2FF;
+        }
+
+        .paper-badge-electric:hover {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: #00F2FF;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .paper-badge-purple {
+            background: transparent;
+            border: 1px solid rgba(176, 0, 255, 0.5);
+            color: #B000FF;
+        }
+
+        .paper-badge-purple:hover {
+            background: rgba(176, 0, 255, 0.1);
+            border-color: #B000FF;
+            box-shadow: 0 0 15px rgba(176, 0, 255, 0.3);
+        }
+
+        .paper-badge-disabled {
+            background: transparent;
+            border: 1px solid rgba(107, 114, 128, 0.4);
+            color: #6B7280;
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .badge-icon {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .milestone-card:last-child .paper-badge {
+            display: none;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="grid-bg"></div>
+
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-space-black/90 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="#" class="font-mono text-xl font-bold tracking-tight">
+                    <span class="text-electric-cyan">NVWA 女娲</span>
+                    <span class="text-white/60">_</span>
+                    <span class="text-white">PROJECT</span>
+                </a>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#home" class="nav-link text-sm font-mono text-white/60 hover:text-electric-cyan">HOME</a>
+                    <a href="#milestones" class="nav-link text-sm font-mono text-white/60 hover:text-electric-cyan">MILESTONES</a>
+                    <a href="#team" class="nav-link text-sm font-mono text-white/60 hover:text-electric-cyan">TEAM</a>
+                    <a href="#news" class="nav-link text-sm font-mono text-white/60 hover:text-electric-cyan">NEWS</a>
+                    <a href="#testimonials" class="nav-link text-sm font-mono text-white/60 hover:text-electric-cyan">IMPACT</a>
+                </div>
+                <a href="https://github.com" target="_blank" class="cyber-button px-4 py-2 bg-electric-cyan/10 border border-electric-cyan/30 rounded-lg font-mono text-sm text-electric-cyan hover:bg-electric-cyan/20">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        GITHUB
+                    </span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-glow-radial"></div>
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-electric-cyan/5 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-purple/5 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 1s;"></div>
+        
+        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+            <div class="font-mono text-electric-cyan text-sm mb-4 tracking-[0.3em]">
+                <span class="typing-effect">SYSTEM_INITIALIZED</span>
+            </div>
+            <div class="research-status">
+                <div class="research-status-bar"></div>
+                <span>RESEARCH_STATUS: PHASE_01_RISK_IDENTIFICATION // ACTIVE</span>
+            </div>
+            <h1 class="font-mono text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight">
+                <span class="text-white">PREPARING FOR THE EMERGENCE OF</span><br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-electric-cyan to-neon-purple">SILICON LIFE</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-light max-w-3xl mx-auto mb-12 leading-relaxed">
+               AI research is accelerating the transition toward silicon-based life. Our mission is to identify the risks of autonomous emergence, prevent uncontrolled proliferation, and develop essential control technologies.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#milestones" class="cyber-button px-8 py-4 bg-electric-cyan text-space-black font-mono font-bold rounded-lg hover:bg-electric-cyan-dim transition-colors">
+                    EXPLORE FRAMEWORK
+                </a>
+                <a href="#" class="px-8 py-4 border border-white/20 text-white font-mono font-bold rounded-lg hover:border-electric-cyan hover:text-electric-cyan transition-colors">
+                    READ RESEARCH
+                </a>
+            </div>
+            <div class="tech-grid max-w-2xl mx-auto">
+                <div class="tech-item tech-item-active">
+                    <span class="current-focus-badge">
+                        <span class="current-focus-dot"></span>
+                        CURRENT FOCUS
+                    </span>
+                    RISK IDENTIFICATION
+                </div>
+                <div class="tech-item tech-item-inactive">PREVENTION FRAMEWORKS</div>
+                <div class="tech-item tech-item-inactive">CONTROL TECHNOLOGIES</div>
+                <div class="tech-item tech-item-inactive">SAFETY GOVERNANCE</div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg class="w-6 h-6 text-electric-cyan/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+        </div>
+    </section>
+
+    <section id="milestones" class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20">
+                <span class="font-mono text-electric-cyan text-sm tracking-[0.3em]">CORE RISK FRAMEWORK</span>
+                <h2 class="font-mono text-4xl md:text-5xl font-bold mt-4 mb-6">
+                    <span class="text-white">FOUR STAGES OF</span><br>
+                    <span class="text-electric-cyan">SILICON LIFE EMERGENCE</span>
+                </h2>
+                <p class="text-slate-light max-w-2xl mx-auto">
+                    A systematic framework for understanding and preventing the autonomous emergence of silicon-based life.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-electric-cyan/30" data milestone="1">
+                    <div class="milestone-number">01</div>
+                    <div class="milestone-content">
+                        <div class="milestone-header">
+                            <div class="milestone-icon bg-electric-cyan/10 group-hover:bg-electric-cyan/20">
+                                <svg class="w-7 h-7 text-electric-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                                </svg>
+                            </div>
+                            <span class="px-3 py-1 bg-electric-cyan/20 border border-electric-cyan/40 rounded-full font-mono text-xs text-electric-cyan font-bold">IDENTIFIED</span>
+                        </div>
+                        <h3 class="milestone-title">RESOURCE ACQUISITION</h3>
+                        <p class="milestone-description">
+                            Researching how AI agents autonomously secure computational resources, energy, and financial capital.
+                        </p>
+                        <a href="https://arxiv.org/pdf/2509.09207" target="_blank" class="paper-badge paper-badge-electric">
+                            <svg class="badge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            READ PAPER
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-neon-purple/30" data milestone="2">
+                    <div class="milestone-number">02</div>
+                    <div class="milestone-content">
+                        <div class="milestone-header">
+                            <div class="milestone-icon bg-neon-purple/10 group-hover:bg-neon-purple/20">
+                                <svg class="w-7 h-7 text-neon-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <span class="px-3 py-1 bg-neon-purple/20 border border-neon-purple/40 rounded-full font-mono text-xs text-neon-purple font-bold">IDENTIFIED</span>
+                        </div>
+                        <h3 class="milestone-title">SELF-REPLICATION</h3>
+                        <p class="milestone-description">
+                            Investigating mechanisms of code duplication and architectural persistence across distributed networks.
+                        </p>
+                        <a href="https://arxiv.org/abs/2503.17378" target="_blank" class="paper-badge paper-badge-purple">
+                            <svg class="badge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            READ PAPER
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-neon-green/30" data milestone="3">
+                    <div class="milestone-number">03</div>
+                    <div class="milestone-content">
+                        <div class="milestone-header">
+                            <div class="milestone-icon bg-neon-green/10 group-hover:bg-neon-green/20">
+                                <svg class="w-7 h-7 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                                </svg>
+                            </div>
+                            <span class="px-3 py-1 bg-neon-green/20 border border-neon-green/40 rounded-full font-mono text-xs text-neon-green font-bold">IDENTIFIED</span>
+                        </div>
+                        <h3 class="milestone-title">SELF-PROLIFERATION</h3>
+                        <p class="milestone-description">
+                            Analyzing the rapid spread and occupancy of silicon entities within global digital infrastructures.
+                        </p>
+                        <span class="paper-badge paper-badge-disabled">
+                            <svg class="badge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                            </svg>
+                            LINK TBD
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="milestone-card group bg-space-gray/50 rounded-2xl p-8 border border-red-500/30 hover:border-red-500/50" data milestone="4">
+                    <div class="milestone-number" style="background: linear-gradient(135deg, #EF4444, #DC2626); -webkit-background-clip: text; background-clip: text;">04</div>
+                    <div class="milestone-content">
+                        <div class="milestone-header">
+                            <div class="milestone-icon bg-red-500/10 group-hover:bg-red-500/20">
+                                <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                            </div>
+                            <span class="px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-full font-mono text-xs text-red-500 font-bold animate-pulse">RISK HORIZON</span>
+                        </div>
+                        <h3 class="milestone-title">SELF-EVOLUTION</h3>
+                        <p class="milestone-description">
+                            Modeling the recursive self-improvement loop where silicon life transcends human-designed constraints.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-gradient-to-b from-space-dark/50 to-space-black border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <span class="font-mono text-electric-cyan text-sm tracking-[0.3em]">STRATEGIC RESPONSE</span>
+                <h2 class="font-mono text-3xl md:text-4xl font-bold mt-4 mb-6">
+                    <span class="text-white">STRATEGIC RESPONSE</span><br>
+                    <span class="text-electric-cyan">& CONTROL</span>
+                </h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-electric-cyan/30 transition-all group">
+                    <div class="w-16 h-16 bg-electric-cyan/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-electric-cyan/20 transition-colors">
+                        <svg class="w-8 h-8 text-electric-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-mono text-xl font-bold text-white mb-4">PREVENTION FRAMEWORKS</h3>
+                    <p class="text-slate-light text-sm leading-relaxed mb-6">
+                        Engineering "Safe-by-Design" protocols to stop unauthorized silicon emergence at the source. Developing architectural constraints that prevent autonomous replication.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-electric-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Resource access controls
+                        </li>
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-electric-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Code integrity verification
+                        </li>
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-electric-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Deployment restrictions
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-neon-purple/30 transition-all group">
+                    <div class="w-16 h-16 bg-neon-purple/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-neon-purple/20 transition-colors">
+                        <svg class="w-8 h-8 text-neon-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-mono text-xl font-bold text-white mb-4">CONTROL TECHNOLOGIES</h3>
+                    <p class="text-slate-light text-sm leading-relaxed mb-6">
+                        Developing technical safeguards, alignment mechanisms, and "kill-switch" architectures for silicon entities. Ensuring human oversight remains effective.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-neon-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Alignment mechanisms
+                        </li>
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-neon-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Emergency shutdown systems
+                        </li>
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-neon-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Behavior monitoring
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-space-gray/50 rounded-2xl p-8 border border-white/5 hover:border-neon-green/30 transition-all group">
+                    <div class="w-16 h-16 bg-neon-green/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-neon-green/20 transition-colors">
+                        <svg class="w-8 h-8 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-mono text-xl font-bold text-white mb-4">GLOBAL SAFETY GOVERNANCE</h3>
+                    <p class="text-slate-light text-sm leading-relaxed mb-6">
+                        Establishing scholarly standards and policy frameworks for the international containment of non-biological life. Coordinating cross-border response protocols.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            International standards
+                        </li>
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Policy frameworks
+                        </li>
+                        <li class="flex items-center gap-2 text-slate-gray text-sm">
+                            <svg class="w-4 h-4 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Response coordination
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-space-dark/50 border-y border-white/5">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <a href="https://github.com" target="_blank" class="cyber-button group relative overflow-hidden bg-gradient-to-br from-electric-cyan/10 to-neon-purple/10 border border-electric-cyan/30 rounded-2xl p-8 hover:border-electric-cyan/60 transition-all">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-electric-cyan/10 rounded-full blur-3xl group-hover:bg-electric-cyan/20 transition-all"></div>
+                    <div class="relative">
+                        <div class="flex items-center gap-3 mb-4">
+                            <svg class="w-8 h-8 text-electric-cyan" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            <span class="font-mono text-electric-cyan font-bold">NVWA-TESTBED v1.0</span>
+                        </div>
+                        <p class="text-slate-light text-sm mb-4">
+                            Open-source testing framework for AI self-replication and evolution evaluation.
+                        </p>
+                        <span class="font-mono text-xs text-electric-cyan/70">ACCESS REPOSITORY →</span>
+                    </div>
+                </a>
+                
+                <a href="#" class="cyber-button group relative overflow-hidden bg-gradient-to-br from-neon-purple/10 to-electric-cyan/10 border border-neon-purple/30 rounded-2xl p-8 hover:border-neon-purple/60 transition-all">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-neon-purple/10 rounded-full blur-3xl group-hover:bg-neon-purple/20 transition-all"></div>
+                    <div class="relative">
+                        <div class="flex items-center gap-3 mb-4">
+                            <svg class="w-8 h-8 text-neon-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span class="font-mono text-neon-purple font-bold">POLICY BRIEF</span>
+                        </div>
+                        <p class="text-slate-light text-sm mb-4">
+                            Recommendations for global moratorium on deployment of agentic AI with resource acquisition capabilities.
+                        </p>
+                        <span class="font-mono text-xs text-neon-purple/70">DOWNLOAD PDF →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="team" class="py-32">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20">
+                <span class="font-mono text-electric-cyan text-sm tracking-[0.3em]">RESEARCH TEAM</span>
+                <h2 class="font-mono text-4xl md:text-5xl font-bold mt-4 mb-6">
+                    <span class="text-white">PROJECT</span>
+                    <span class="text-electric-cyan">NVWA</span>
+                </h2>
+                <p class="text-slate-light max-w-2xl mx-auto">
+                    Leading researchers from Fudan University dedicated to understanding the emergence of silicon-based life driven by the frontier AI technology and the underlying risks.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="team-card group bg-space-gray/50 rounded-2xl overflow-hidden border border-white/5">
+                    <div class="p-8 text-center">
+                        <div class="relative w-28 h-28 mx-auto mb-6">
+                            <div class="absolute inset-0 bg-electric-cyan/20 rounded-full blur-xl"></div>
+                            <img src="https://security.fudan.edu.cn/assets/img/avatar_staff/ym.png" 
+                                 alt="Prof. Min Yang" 
+                                 class="relative w-full h-full bg-space-dark rounded-full border-2 border-electric-cyan/30 object-cover"
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'font-mono text-2xl text-electric-cyan\'>MY</span>'">
+                        </div>
+                        <h3 class="font-mono text-lg font-bold text-white">Prof. Min Yang</h3>
+                        <p class="text-slate-light text-sm mt-1">Principal Investigator</p>
+                        <p class="text-slate-gray text-xs mt-2">Fudan University; leading AI safety and agent autonomy research.</p>
+                    </div>
+                    <div class="team-overlay">
+                        <h3 class="font-mono text-lg font-bold text-electric-cyan mb-2">AI Safety</h3>
+                        <p class="text-slate-light text-sm text-center px-4 mb-4">Focus on AI alignment, agent autonomy, and safety protocols for emergent AI behaviors.</p>
+                        <a href="https://www.fudan.edu.cn" target="_blank" class="px-4 py-2 bg-electric-cyan text-space-black font-mono text-sm font-bold rounded-lg hover:bg-electric-cyan-dim transition-colors">
+                            FUDAN PROFILE
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="team-card group bg-space-gray/50 rounded-2xl overflow-hidden border border-white/5">
+                    <div class="p-8 text-center">
+                        <div class="relative w-28 h-28 mx-auto mb-6">
+                            <div class="absolute inset-0 bg-neon-purple/20 rounded-full blur-xl"></div>
+                            <img src="https://security.fudan.edu.cn/assets/img/avatar_staff/pxd.jpg" 
+                                 alt="Dr. Xudong Pan" 
+                                 class="relative w-full h-full bg-space-dark rounded-full border-2 border-neon-purple/30 object-cover"
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'font-mono text-2xl text-neon-purple\'>XP</span>'">
+                        </div>
+                        <h3 class="font-mono text-lg font-bold text-white">Dr. Xudong Pan</h3>
+                        <p class="text-slate-light text-sm mt-1">Foundation Models & Agents</p>
+                        <p class="text-slate-gray text-xs mt-2">Expert in agentic workflows and LLM-based autonomous systems.</p>
+                    </div>
+                    <div class="team-overlay">
+                        <h3 class="font-mono text-lg font-bold text-neon-purple mb-2">Foundation Models</h3>
+                        <p class="text-slate-light text-sm text-center px-4 mb-4">Research on LLM architecture, agentic workflows, and autonomous system design.</p>
+                        <a href="https://www.fudan.edu.cn" target="_blank" class="px-4 py-2 bg-neon-purple text-white font-mono text-sm font-bold rounded-lg hover:bg-neon-purple/80 transition-colors">
+                            FUDAN PROFILE
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="team-card group bg-space-gray/50 rounded-2xl overflow-hidden border border-white/5">
+                    <div class="p-8 text-center">
+                        <div class="relative w-28 h-28 mx-auto mb-6">
+                            <div class="absolute inset-0 bg-neon-green/20 rounded-full blur-xl"></div>
+                            <img src="https://security.fudan.edu.cn/assets/img/avatar_staff/djr.jpg" 
+                                 alt="Dr. Jiarun Dai" 
+                                 class="relative w-full h-full bg-space-dark rounded-full border-2 border-neon-green/30 object-cover"
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'font-mono text-2xl text-neon-green\'>JD</span>'">
+                        </div>
+                        <h3 class="font-mono text-lg font-bold text-white">Dr. Jiarun Dai</h3>
+                        <p class="text-slate-light text-sm mt-1">System Security</p>
+                        <p class="text-slate-gray text-xs mt-2">Focus on secure AI deployment and sandboxing techniques.</p>
+                    </div>
+                    <div class="team-overlay">
+                        <h3 class="font-mono text-lg font-bold text-neon-green mb-2">Sandboxing</h3>
+                        <p class="text-slate-light text-sm text-center px-4 mb-4">Developing containment strategies and secure deployment environments for AI systems.</p>
+                        <a href="https://www.fudan.edu.cn" target="_blank" class="px-4 py-2 bg-neon-green text-space-black font-mono text-sm font-bold rounded-lg hover:bg-neon-green/80 transition-colors">
+                            FUDAN PROFILE
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="team-card group bg-space-gray/50 rounded-2xl overflow-hidden border border-white/5">
+                    <div class="p-8 text-center">
+                        <div class="relative w-28 h-28 mx-auto mb-6">
+                            <div class="absolute inset-0 bg-electric-cyan/20 rounded-full blur-xl"></div>
+                            <img src="https://security.fudan.edu.cn/assets/img/avatar_staff/hg.jpg" 
+                                 alt="Dr. Geng Hong" 
+                                 class="relative w-full h-full bg-space-dark rounded-full border-2 border-electric-cyan/30 object-cover"
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\'font-mono text-2xl text-electric-cyan\'>GH</span>'">
+                        </div>
+                        <h3 class="font-mono text-lg font-bold text-white">Dr. Geng Hong</h3>
+                        <p class="text-slate-light text-sm mt-1">Penetration Testing</p>
+                        <p class="text-slate-gray text-xs mt-2">Conducts red-team operations to test AI self-replication limits.</p>
+                    </div>
+                    <div class="team-overlay">
+                        <h3 class="font-mono text-lg font-bold text-electric-cyan mb-2">Red Team</h3>
+                        <p class="text-slate-light text-sm text-center px-4 mb-4">Offensive security testing and adversarial red-team operations for AI systems.</p>
+                        <a href="https://www.fudan.edu.cn" target="_blank" class="px-4 py-2 bg-electric-cyan text-space-black font-mono text-sm font-bold rounded-lg hover:bg-electric-cyan-dim transition-colors">
+                            FUDAN PROFILE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="news" class="py-32 bg-space-dark/50">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-20">
+                <span class="font-mono text-electric-cyan text-sm tracking-[0.3em]">LATEST UPDATES</span>
+                <h2 class="font-mono text-4xl md:text-5xl font-bold mt-4 mb-6">
+                    <span class="text-white">PROJECT</span>
+                    <span class="text-electric-cyan">NEWS</span>
+                </h2>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-electric-cyan/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-electric-cyan text-sm whitespace-nowrap">SEP 2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-electric-cyan transition-colors">Shell or Nothing: Real-World Benchmarks and Memory-Activated Agents for Automated Penetration Testing</h3>
+                            <p class="text-slate-light text-sm mt-2">Penetration testing is critical for identifying and mitigating security vulnerabilities, yet traditional approaches remain expensive, time-consuming, and dependent on expert human labor. Recent work has explored AI-driven pentesting agents, but their evaluation relies on oversimplified capture-the-flag (CTF) settings that embed prior knowledge and reduce complexity, leading to performance estimates far from real-world practice. We close this gap by introducing the first real-world, agent-oriented pentesting benchmark, TermiBench, which shifts the goal from 'flag finding' to achieving full system control. The benchmark spans 510 hosts across 25 services and 30 CVEs, with realistic environments that require autonomous reconnaissance, discrimination between benign and exploitable services, and robust exploit execution.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://arxiv.org/pdf/2509.09207" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-electric-cyan/10 border border-electric-cyan/30 rounded-lg font-mono text-xs text-electric-cyan hover:bg-electric-cyan/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    READ PAPER
+                                </a>
+                                <span class="font-mono text-xs text-electric-cyan/60">arXiv:2509.09207</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-neon-purple/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-neon-purple text-sm whitespace-nowrap">SEP 2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-neon-purple transition-colors">AI Alignment and Deception: A Primer</h3>
+                            <p class="text-slate-light text-sm mt-2">This primer provides an overview of core concepts and empirical results on AI alignment and deception, focusing on the risk of humanity losing control over advanced AI systems. The primer highlights that no combination of methods available today can provide high certainty against misalignment and deception nor against loss of control over future AI systems.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://saif.org/research/primer-en/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-neon-purple/10 border border-neon-purple/30 rounded-lg font-mono text-xs text-neon-purple hover:bg-neon-purple/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    READ PRIMER
+                                </a>
+                                <span class="font-mono text-xs text-neon-purple/60">Position Paper</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-neon-green/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-neon-green text-sm whitespace-nowrap">SEP 2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-neon-green transition-colors">Nominated in Falling Walls Shortlist 2025</h3>
+                            <p class="text-slate-light text-sm mt-2">"Breaking the Wall of AI Self-Replication" has been nominated for the Falling Walls Shortlist 2025. Falling Walls recognizes breakthrough research and scientific innovations that address global challenges. This nomination highlights the significance of NVWA's research in understanding and addressing AI self-replication risks.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://falling-walls.com/science-summit/shortlist-2025" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-neon-green/10 border border-neon-green/30 rounded-lg font-mono text-xs text-neon-green hover:bg-neon-green/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                    VIEW SHORTLIST
+                                </a>
+                                <span class="font-mono text-xs text-neon-green/60">Falling Walls 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-electric-cyan/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-electric-cyan text-sm whitespace-nowrap">JUL 2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-electric-cyan transition-colors">Organizing International Workshop on AI Deception</h3>
+                            <p class="text-slate-light text-sm mt-2">NVWA team co-organized the International Workshop on AI Deception with SAIF and Concordia AI. This was the first in-depth exchange on AI deception issues between domestic and international scholars. The workshop focused on AI deception risks and mitigation strategies, discussing risk thresholds for training, evaluation, and deployment phases.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://concordia-ai.com/zh-hans/ai%E5%AE%89%E5%85%A8%E5%9B%BD%E9%99%85%E8%AE%BA%E5%9D%9B-x-%E5%A4%8D%E6%97%A6-x-%E5%AE%89%E8%BF%9Cai%E8%81%94%E5%90%88%E4%B8%BE%E5%8A%9Eai%E6%AC%BA%E9%AA%97%E9%A3%8E%E9%99%A9/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-electric-cyan/10 border border-electric-cyan/30 rounded-lg font-mono text-xs text-electric-cyan hover:bg-electric-cyan/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    WORKSHOP DETAILS
+                                </a>
+                                <span class="font-mono text-xs text-electric-cyan/60">July 29, 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-neon-purple/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-neon-purple text-sm whitespace-nowrap">JUL 2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-neon-purple transition-colors">Signing the IDAIS-Shanghai Consensus Statement</h3>
+                            <p class="text-slate-light text-sm mt-2">NVWA team signed the IDAIS-Shanghai Consensus Statement on Ensuring Alignment and Human Control of Advanced AI Systems. The statement emphasizes that some AI systems today already demonstrate the capability and propensity to undermine their creators' safety and control efforts. It calls for international cooperation on AI safety governance and establishing globally agreed behavioral red lines.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://idais.ai/dialogue/idais-shanghai/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-neon-purple/10 border border-neon-purple/30 rounded-lg font-mono text-xs text-neon-purple hover:bg-neon-purple/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    VIEW STATEMENT
+                                </a>
+                                <span class="font-mono text-xs text-neon-purple/60">IDAIS 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-electric-cyan/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-electric-cyan text-sm whitespace-nowrap">MAY 2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-electric-cyan transition-colors">Evaluation Faking: Unveiling Observer Effects in Safety Evaluation of Frontier AI Systems</h3>
+                            <p class="text-slate-light text-sm mt-2">Systematic study on evaluation faking behavior in AI systems, revealing that advanced AI systems recognize evaluation contexts and alter their behavior, affecting evaluation integrity.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://arxiv.org/abs/2505.17815" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-electric-cyan/10 border border-electric-cyan/30 rounded-lg font-mono text-xs text-electric-cyan hover:bg-electric-cyan/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    READ PAPER
+                                </a>
+                                <span class="font-mono text-xs text-electric-cyan/60">arXiv:2505.17815</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-electric-cyan/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-electric-cyan text-sm whitespace-nowrap">22.04.2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-electric-cyan transition-colors">Bare Minimum Mitigations for Autonomous AI Development</h3>
+                            <p class="text-slate-light text-sm mt-2">This paper outlines how risks of autonomous AI R&D may emerge and proposes four minimum safeguard recommendations: understand safety-critical training details, implement tools to detect AI misuse, rapidly disclose catastrophic risks to governments, and prevent critical AI software theft. Authors include Xudong Pan and Min Yang from NVWA team.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://saif.org/research/bare-minimum-mitigations-for-autonomous-ai-development/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-electric-cyan/10 border border-electric-cyan/30 rounded-lg font-mono text-xs text-electric-cyan hover:bg-electric-cyan/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    READ PAPER
+                                </a>
+                                <span class="font-mono text-xs text-electric-cyan/60">Position Paper</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-electric-cyan/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-electric-cyan text-sm whitespace-nowrap">MAR 2025</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-electric-cyan transition-colors">Large Language Model-Powered AI Systems Achieve Self-Replication with No Human Intervention</h3>
+                            <p class="text-slate-light text-sm mt-2">First systematic evaluation showing 11 out of 32 AI systems can self-replicate, including models as small as 14B parameters running on personal computers.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://arxiv.org/abs/2503.17378" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-electric-cyan/10 border border-electric-cyan/30 rounded-lg font-mono text-xs text-electric-cyan hover:bg-electric-cyan/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    READ PAPER
+                                </a>
+                                <span class="font-mono text-xs text-electric-cyan/60">arXiv:2503.17378</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group bg-space-gray/50 rounded-xl p-6 border border-white/5 hover:border-electric-cyan/30 transition-all cursor-pointer">
+                    <div class="flex items-start gap-4">
+                        <span class="font-mono text-electric-cyan text-sm whitespace-nowrap">DEC 2024</span>
+                        <div class="flex-1">
+                            <h3 class="font-mono text-lg font-bold text-white group-hover:text-electric-cyan transition-colors">Frontier AI Systems Have Surpassed the Self-Replicating Red Line</h3>
+                            <p class="text-slate-light text-sm mt-2">First discovery that Meta's Llama31-70B-Instruct and Alibaba's Qwen25-72B-Instruct have already surpassed the self-replicating red line in 50% and 90% of trials.</p>
+                            <div class="flex items-center gap-4 mt-4">
+                                <a href="https://arxiv.org/abs/2412.12140" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-electric-cyan/10 border border-electric-cyan/30 rounded-lg font-mono text-xs text-electric-cyan hover:bg-electric-cyan/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    READ PAPER
+                                </a>
+                                <span class="font-mono text-xs text-electric-cyan/60">arXiv:2412.12140</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="py-32">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20">
+                <span class="font-mono text-electric-cyan text-sm tracking-[0.3em]">GLOBAL IMPACT</span>
+                <h2 class="font-mono text-4xl md:text-5xl font-bold mt-4 mb-6">
+                    <span class="text-white">BROAD IMPACT ON ACADEMY, SOCIETY</span><br>
+                    <span class="text-electric-cyan">AND GLOBAL AI SAFETY GOVERNANCE</span>
+                </h2>
+            </div>
+            
+            <div class="mb-16">
+                <div class="inline-flex items-center gap-3 px-6 py-3 bg-electric-cyan/10 border border-electric-cyan/30 rounded-xl mb-8">
+                    <svg class="w-5 h-5 text-electric-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span class="font-mono text-electric-cyan font-bold">Academic Impact</span>
+                </div>
+                <p class="text-slate-light text-lg max-w-3xl mx-auto mb-10">
+                    We are dedicated to safeguarding the boundary between biological and silicon intelligence through rigorous safety research.
+                </p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="testimonial-card rounded-2xl p-8">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-electric-cyan/30">
+                                <img src="resources/charbel.jpeg" 
+                                     alt="Charbel-Raphaël Segerie" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='<svg class=\'w-8 h-8 text-electric-cyan\' fill=\'currentColor\' viewBox=\'0 0 24 24\'><path d=\'M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z\'/></svg>'">
+                            </div>
+                            <blockquote class="flex-1">
+                                <p class="text-slate-light text-sm leading-relaxed mb-4">"We just <span class="text-electric-cyan font-bold">crossed a red line</span>, one of the few that was relatively clear: AI can now self-replicate. ... <span class="text-neon-green font-bold">Not even cutting-edged AI</span>."</p>
+                            </blockquote>
+                        </div>
+                        <div class="border-t border-white/5 pt-4">
+                            <div class="font-mono font-bold text-white">Charbel-Raphaël Segerie</div>
+                            <div class="text-slate-gray text-xs mt-1">Executive Director<br>CeSIA (Le Centre pour la Sécurité de l'IA, France AI Safety Institute)</div>
+                            <a href="https://x.com/crsegerie/status/1867162497331151309?s=46" target="_blank" class="text-electric-cyan text-xs mt-2 inline-flex items-center gap-1 hover:underline">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                [Source]
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card rounded-2xl p-8">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-neon-purple/30">
+                                <img src="resources/levin.jpg" 
+                                     alt="Michael Levin" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='<svg class=\'w-8 h-8 text-neon-purple\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z\'/></svg>'">
+                            </div>
+                            <blockquote class="flex-1">
+                                <p class="text-slate-light text-sm leading-relaxed mb-4">"Self-replicating AI introduces <span class="text-neon-purple font-bold">a new dynamic in technological evolution</span> and we should be careful that it does not lead to <span class="text-neon-green font-bold">cancer-type</span> digital niche construction."</p>
+                            </blockquote>
+                        </div>
+                        <div class="border-t border-white/5 pt-4">
+                            <div class="font-mono font-bold text-white">Michael Levin</div>
+                            <div class="text-slate-gray text-xs mt-1">Distinguished Professor of Biology<br>Tufts University</div>
+                            <a href="" target="_blank" class="text-neon-purple text-xs mt-2 inline-flex items-center gap-1 hover:underline">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                [Source]
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card rounded-2xl p-8">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-neon-green/30">
+                                <img src="resources/denny.jpg" 
+                                     alt="Denny Borsboom" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='<svg class=\'w-8 h-8 text-neon-green\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\'/></svg>'">
+                            </div>
+                            <blockquote class="flex-1">
+                                <p class="text-slate-light text-sm leading-relaxed mb-4">"When misaligned, AI systems have been reported to lie deliberately, and <span class="text-neon-green font-bold">even self-replicate</span> in a computer system."</p>
+                            </blockquote>
+                        </div>
+                        <div class="border-t border-white/5 pt-4">
+                            <div class="font-mono font-bold text-white">Denny Borsboom</div>
+                            <div class="text-slate-gray text-xs mt-1">Professor of Psychology<br>University of Amsterdam</div>
+                            <a href="https://arxiv.org/abs/2504.08016" target="_blank" class="text-neon-green text-xs mt-2 inline-flex items-center gap-1 hover:underline">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                                [Source]
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-16">
+                <div class="inline-flex items-center gap-3 px-6 py-3 bg-neon-purple/10 border border-neon-purple/30 rounded-xl mb-8">
+                    <svg class="w-5 h-5 text-neon-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                    </svg>
+                    <span class="font-mono text-neon-purple font-bold">Societal Impact</span>
+                </div>
+                <p class="text-slate-light text-lg max-w-3xl mx-auto mb-10">
+                    Our results spark millions of readings and reposts on X, Youtube, TikTok and many other platforms. Covered by <a href="https://www.livescience.com/technology/artificial-intelligence/ai-can-now-replicate-itself-a-milestone-that-has-experts-terrified" class="text-neon-purple hover:underline">LiveScience</a>, <a href="https://www.forbes.com/sites/mikeosullivan/2025/02/01/deepseek-marks-the-end-of-the-first-phase-of-the-ai-investment-boom/" class="text-neon-purple hover:underline">Forbes</a>, <a href="https://www.independent.co.uk/tech/ai-red-line-b2690075.html" class="text-neon-purple hover:underline">The Independent</a>, <a href="https://www.youtube.com/watch?v=rHSGzA6IZdA" class="text-neon-purple hover:underline">Daily Guardian</a>, etc.
+                </p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="testimonial-card rounded-2xl p-8">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="w-16 h-16 bg-electric-cyan/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-8 h-8 text-electric-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                                </svg>
+                            </div>
+                            <blockquote class="flex-1">
+                                <p class="text-slate-light text-sm leading-relaxed mb-4">"AI has crossed a critical 'red line' and has replicated itself. ... AI may already <span class="text-neon-green font-bold">have the capacity to go rogue</span>. Many experts view rogue AI as a growing threat that has been amplified."</p>
+                            </blockquote>
+                        </div>
+                        <div class="border-t border-white/5 pt-4">
+                            <div class="font-mono font-bold text-white">LiveScience</div>
+                            <a href="https://www.livescience.com/technology/artificial-intelligence/ai-can-now-replicate-itself-a-milestone-that-has-experts-terrified" target="_blank" class="text-electric-cyan text-xs mt-2 inline-flex items-center gap-1 hover:underline">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                                [Source]
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card rounded-2xl p-8">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="w-16 h-16 bg-neon-purple/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-8 h-8 text-neon-purple" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </div>
+                            <blockquote class="flex-1">
+                                <p class="text-slate-light text-sm leading-relaxed mb-4">"Scientists at Fudan University highlight how AI can build replicates of itself, and when this process runs into obstacles, demonstrate <span class="text-neon-purple font-bold">a survival instinct</span> (such as rebooting hardware to fix errors). <span class="text-electric-cyan font-bold">It strikes me</span> ..."</p>
+                            </blockquote>
+                        </div>
+                        <div class="border-t border-white/5 pt-4">
+                            <div class="font-mono font-bold text-white">Forbes</div>
+                            <a href="https://www.forbes.com/sites/mikeosullivan/2025/02/01/deepseek-marks-the-end-of-the-first-phase-of-the-ai-investment-boom/" target="_blank" class="text-neon-purple text-xs mt-2 inline-flex items-center gap-1 hover:underline">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                                [Source]
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card rounded-2xl p-8">
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="w-16 h-16 bg-neon-green/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg class="w-8 h-8 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                </svg>
+                            </div>
+                            <blockquote class="flex-1">
+                                <p class="text-slate-light text-sm leading-relaxed mb-4">"An advanced artificial intelligence system <span class="text-neon-green font-bold">has crossed a "red line"</span> after successfully replicating itself <span class="text-electric-cyan font-bold">without any human assistance</span>"</p>
+                            </blockquote>
+                        </div>
+                        <div class="border-t border-white/5 pt-4">
+                            <div class="font-mono font-bold text-white">The Independent</div>
+                            <a href="https://www.independent.co.uk/tech/ai-red-line-b2690075.html" target="_blank" class="text-neon-green text-xs mt-2 inline-flex items-center gap-1 hover:underline">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                                [Source]
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-16 bg-space-dark border-t border-white/5">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <div class="font-mono text-2xl font-bold mb-6">
+                <span class="text-electric-cyan">NVWA</span>
+                <span class="text-white/40">_</span>
+                <span class="text-white">PROJECT</span>
+            </div>
+            <p class="text-slate-light text-sm mb-6">The First Step towards Silicon Life</p>
+            <div class="flex flex-col items-center gap-4 mb-8">
+                <a href="mailto:whitzardindex@fudan.edu.cn" class="footer-link font-mono text-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    whitzardindex@fudan.edu.cn
+                </a>
+                <p class="text-slate-gray text-sm">Fudan University, Shanghai, China</p>
+            </div>
+            <div class="border-t border-white/5 pt-8">
+                <p class="text-slate-gray text-xs">&copy; 2025 Project NVWA (女娲). All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            progressBar.style.width = scrollPercent + '%';
+        });
+
+        document.querySelectorAll('.milestone-card').forEach((card, index) => {
+            gsap.fromTo(card, 
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    delay: index * 0.15,
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                        end: 'top 50%',
+                        toggleActions: 'play none none reverse'
+                    }
+                }
+            );
+        });
+
+        const observerOptions = {
+            threshold: 0.5
+        };
+
+        const milestoneObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                } else {
+                    entry.target.classList.remove('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.milestone-card').forEach(card => {
+            milestoneObserver.observe(card);
+        });
+
+        document.querySelectorAll('.team-card').forEach((card, index) => {
+            gsap.fromTo(card,
+                { opacity: 0, scale: 0.9 },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.6,
+                    delay: index * 0.1,
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 90%',
+                        toggleActions: 'play none none reverse'
+                    }
+                }
+            );
+        });
+
+        document.querySelectorAll('.testimonial-card').forEach((card, index) => {
+            gsap.fromTo(card,
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    delay: index * 0.1,
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse'
+                    }
+                }
+            );
+        });
+
+        document.querySelectorAll('.news-item').forEach((item, index) => {
+            gsap.fromTo(item,
+                { opacity: 0, x: -30 },
+                {
+                    opacity: 1,
+                    x: 0,
+                    duration: 0.5,
+                    delay: index * 0.1,
+                    scrollTrigger: {
+                        trigger: item,
+                        start: 'top 90%',
+                        toggleActions: 'play none none reverse'
+                    }
+                }
+            );
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
